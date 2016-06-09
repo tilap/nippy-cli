@@ -1,0 +1,23 @@
+/**
+ * <%- api.name %> v<%- api.version %> api client
+ * <%- api.description %>
+ * generated on <%- new Date().getDate() %>-<%- new Date().getMonth() + 1 %>-<%- new Date().getFullYear() %> <%- new Date().getHours() %>h<%- new Date().getMinutes() %>
+ */
+
+const ApiClient = require('nippy-api-client');
+
+module.exports = class BaseClient extends ApiClient {
+<% for(var k in methods) { %>
+  /**
+   * <%- methods[k].description %>
+   */
+  async <%- methods[k].name %>(<%- methods[k].options.join(', ') %>) {
+    const response = await super.<%- methods[k].verb %>(<%- methods[k].args.join(', ') %>);
+    return <%
+      if (methods[k].singleResult === true) { %>response.getUniqueData()<% }
+      else if (methods[k].singleResult === false) { %>response.getData()<% }
+      else { %>response.getSuccess()<% }
+    %>;
+  }
+<% } %>
+};

@@ -1,5 +1,9 @@
 'use strict';
 
+var _assign = require('babel-runtime/core-js/object/assign');
+
+var _assign2 = _interopRequireDefault(_assign);
+
 var _promise = require('babel-runtime/core-js/promise');
 
 var _promise2 = _interopRequireDefault(_promise);
@@ -38,6 +42,13 @@ var _saveInFile2 = _interopRequireDefault(_saveInFile);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+process.on('unhandledRejection', function (reason) {
+  console.error('Unhandle promise rejection: ' + reason); // eslint-disable-line no-console
+  console.error(reason); // eslint-disable-line no-console
+});
+
+var sourceUrl = 'https://github.com/tilap/nippy-scaff-bare/tarball/v1.0.0';
+
 console.info('');
 console.info(_chalk2.default.green.bold('❯ Api client generator'));
 
@@ -53,11 +64,11 @@ function getTemplate(tpl) {
   return _fs2.default.readFileSync(filepath, { encoding: 'utf8' });
 }
 
-function outputTemplate(template, data, folder, filename) {
+function outputTemplate(template, data, filename) {
   return new _promise2.default(function (resolve, reject) {
     var tpl = getTemplate(template);
     var content = _ejs2.default.render(tpl, data);
-    var fileToSaveTo = _path2.default.resolve('./', folder, filename);
+    var fileToSaveTo = _path2.default.resolve('./', filename);
     try {
       _fs2.default.accessSync(fileToSaveTo, _fs2.default.F_OK);
       _inquirer2.default.prompt({
@@ -78,6 +89,27 @@ function outputTemplate(template, data, folder, filename) {
   });
 }
 
+function getRemoteApiData(url) {
+  return (0, _nodeFetch2.default)(url, {
+    mode: 'cors',
+    cache: 'default',
+    method: 'get',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    }
+  }).catch(function (err) {
+    console.error(_chalk2.default.red('Error while fetching the main api infos (' + (err.message || err) + ')'));
+    process.exit();
+  }).then(function (res) {
+    if (!res) {
+      console.error(_chalk2.default.red('Error while fetching the api (bad response)'));
+      return {};
+    }
+    return res.json();
+  });
+}
+
 try {
   _fs2.default.accessSync(envFile, _fs2.default.F_OK);
   _fs2.default.accessSync(configFile, _fs2.default.F_OK);
@@ -90,100 +122,112 @@ try {
   var parameters = require(parametersFile);
   process.chdir(scriptRoot);
 
-  defaultUrl = '' + config.urls.root + config.urls.root_path + '/documentation/methods';
+  defaultUrl = '' + config.urls.root + config.urls.root_path;
 } catch (e) {
-  defaultUrl = 'http://localhost:3000/api/v1/documentation/methods';
+  defaultUrl = 'http://localhost:3000/api/v1';
 }
 
 console.info(_chalk2.default.grey('  api will be generated with running api server documentation'));
 console.info(_chalk2.default.grey('  please make sure your server is running and api doc is reachable'));
 
+var exportData = {};
 _inquirer2.default.prompt({
   type: 'text',
   name: 'url',
   message: 'Remote api documentation',
   default: defaultUrl
-}).then(function (answer) {
-  console.info(_chalk2.default.grey('  fetching api documentation from ' + answer.url));
-  return (0, _nodeFetch2.default)(answer.url, {
-    mode: 'cors',
-    cache: 'default',
-    method: 'get',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    }
-  });
+}).then(function (answers) {
+  (0, _assign2.default)(exportData, answers);
+  return getRemoteApiData(exportData.url + '/documentation');
 }).catch(function (err) {
-  console.error(_chalk2.default.red('Error while fetching the api (' + (err.message || err) + ')'));
+  console.error(_chalk2.default.red('Error while fetching the main api infos (' + (err.message || err) + ')'));
   process.exit();
-}).then(function (res) {
-  if (!res) {
-    console.error(_chalk2.default.red('Error while fetching the api (bad response)'));
+}).then(function (answers) {
+  if (answers.constructor !== Object) {
+    console.error(_chalk2.default.red('Error while fetching the main api infos: not a valid object'));
     process.exit();
   }
-  return res.json();
+  if (!answers.hasOwnProperty('success') || !answers.success.hasOwnProperty('dataset')) {
+    console.error(_chalk2.default.red('Error while fetching the main api infos: missing data'));
+    process.exit();
+  }
+
+  (0, _assign2.default)(exportData, { api: answers.success.dataset[0] });
+  return getRemoteApiData(exportData.url + exportData.api.links.methods);
+}).catch(function (err) {
+  console.error(_chalk2.default.red('Error while fetching methods api infos (' + (err.message || err) + ')'));
+  process.exit();
 }).then(function (json) {
-  var methodTemplate = getTemplate('api/method');
-  var methods = [];
+  var templateData = { methods: [], api: exportData.api };
   var k = 1;
-  json.success.dataset.forEach(function (cfg) {
-    console.info(_chalk2.default.grey(k + '/' + json.success.dataset.length + ' ' + cfg.name));
-    k++;
-    if (cfg.args) {
+  json.success.dataset.forEach(function (methodConfig) {
+    if (methodConfig.args) {
       (function () {
-        var data = {
-          methodName: cfg.name,
-          methodArgs: [],
+        var name = methodConfig.name;
+        var _methodConfig$method = methodConfig.method;
+        var method = _methodConfig$method === undefined ? 'get' : _methodConfig$method;
+        var path = methodConfig.path;
+        var _methodConfig$descrip = methodConfig.description;
+        var description = _methodConfig$descrip === undefined ? '@todo: add description' : _methodConfig$descrip;
+        var _methodConfig$args = methodConfig.args;
+        var params = _methodConfig$args.params;
+        var get = _methodConfig$args.get;
+        var data = _methodConfig$args.data;
+        var single = methodConfig.results.single;
+
+
+        console.info(_chalk2.default.grey(k + '/' + json.success.dataset.length + ' ' + name));
+        k++;
+
+        var methodData = {
+          name: name,
+          description: description,
+          verb: method,
+          path: path,
           options: [],
-          method: cfg.method || 'get',
-          description: cfg.description || '@todo: add description',
-          results: cfg.results
+          singleResult: single,
+          args: []
         };
 
-        var args = cfg.args;
-
-        var methodPath = cfg.path;
-        if (args.params) {
-          args.params.forEach(function (param) {
-            data.options.push(param);
-            methodPath = methodPath.replace(':' + param, '${' + param + '}'); // eslint-disable-line prefer-template
-            data.description += '\n   * @param ' + param;
+        if (params) {
+          params.forEach(function (param) {
+            methodData.description += '\n   * @param ' + param;
           });
-          methodPath = '`' + methodPath + '`'; // eslint-disable-line prefer-template
+
+          params.forEach(function (param) {
+            methodData.options.push(param);
+          });
+
+          params.forEach(function (param) {
+            methodData.path = methodData.path.replace(':' + param, '${' + param + '}'); // eslint-disable-line prefer-template
+          });
+          methodData.path = '`' + methodData.path + '`'; // eslint-disable-line prefer-template
         } else {
-            methodPath = '\'' + methodPath + '\'';
+            methodData.path = "'" + methodData.path + "'";
           }
 
-        data.methodArgs.push(methodPath);
+        methodData.args.push(methodData.path);
 
-        if (args.get) {
-          data.options.push('options = {}');
-          data.methodArgs.push('options');
-          data.description += '\n   * @param options filter items to ' + data.method;
-        } else {
-          if (args.data) {
-            data.methodArgs.push('{}');
-          }
+        if (get) {
+          methodData.options.push('options = {}');
+          methodData.args.push('options');
+          var v = methodData.verb === 'patch' ? 'update' : methodData.verb;
+          methodData.description += '\n   * @param options filtering items to ' + v;
+        } else if (data) {
+          methodData.args.push('{}');
         }
-        if (args.data) {
-          data.options.push('data = {}');
-          data.methodArgs.push('data');
-          data.description += '\n   * @param data new data to ' + data.method;
+
+        if (data) {
+          methodData.options.push('data = {}');
+          methodData.args.push('data');
+          methodData.description += '\n   * @param data';
         }
-        methods.push(_ejs2.default.render(methodTemplate, data));
+
+        templateData.methods.push(methodData);
       })();
     }
   });
 
-  _inquirer2.default.prompt({
-    type: 'text',
-    name: 'path',
-    default: './',
-    message: 'Where to store the file?'
-  }).then(function (answers) {
-    outputTemplate('api/main', { methods: methods.join('') }, answers.path, 'api-client.js');
-  });
-}).catch(function (err) {
-  return console.log(err);
+  var template = getTemplate('api/main');
+  outputTemplate('api/main', templateData, exportData.api.name + '-client-' + exportData.api.version + '.js');
 });

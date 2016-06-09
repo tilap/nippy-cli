@@ -7,6 +7,13 @@ import inquirer from 'inquirer';
 import path from 'path';
 import saveInFile from '../../library/saveInFile';
 
+process.on('unhandledRejection', (reason) => {
+  console.error(`Unhandle promise rejection: ${reason}`); // eslint-disable-line no-console
+  console.error(reason); // eslint-disable-line no-console
+});
+
+const sourceUrl = 'https://github.com/tilap/nippy-scaff-bare/tarball/v1.0.0';
+
 console.info('');
 console.info(chalk.green.bold('❯ Api client generator'));
 
@@ -22,11 +29,11 @@ function getTemplate(tpl) {
   return fs.readFileSync(filepath, { encoding: 'utf8' });
 }
 
-function outputTemplate(template, data, folder, filename) {
+function outputTemplate(template, data, filename) {
   return new Promise((resolve, reject) => {
     const tpl = getTemplate(template);
     const content = ejs.render(tpl, data);
-    const fileToSaveTo = path.resolve('./', folder, filename);
+    const fileToSaveTo = path.resolve('./', filename);
     try {
       fs.accessSync(fileToSaveTo, fs.F_OK);
       inquirer.prompt({
@@ -47,6 +54,30 @@ function outputTemplate(template, data, folder, filename) {
   });
 }
 
+
+function getRemoteApiData(url) {
+  return fetch(url, {
+    mode: 'cors',
+    cache: 'default',
+    method: 'get',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+  })
+  .catch((err) => {
+    console.error(chalk.red(`Error while fetching the main api infos (${err.message || err})`));
+    process.exit();
+  })
+  .then((res) => {
+    if (!res) {
+      console.error(chalk.red(`Error while fetching the api (bad response)`));
+      return {};
+    }
+    return res.json();
+  })
+}
+
 try {
   fs.accessSync(envFile, fs.F_OK);
   fs.accessSync(configFile, fs.F_OK);
@@ -59,101 +90,106 @@ try {
   const parameters = require(parametersFile);
   process.chdir(scriptRoot);
 
-  defaultUrl = `${config.urls.root}${config.urls.root_path}/documentation/methods`;
+  defaultUrl = `${config.urls.root}${config.urls.root_path}`;
 } catch (e) {
-  defaultUrl = 'http://localhost:3000/api/v1/documentation/methods';
+  defaultUrl = 'http://localhost:3000/api/v1';
 }
 
 console.info(chalk.grey('  api will be generated with running api server documentation'));
 console.info(chalk.grey('  please make sure your server is running and api doc is reachable'));
 
+let exportData = {};
 inquirer.prompt({
   type: 'text',
   name: 'url',
   message: 'Remote api documentation',
   default: defaultUrl
-}).then((answer) => {
-  console.info(chalk.grey(`  fetching api documentation from ${answer.url}`));
-  return fetch(answer.url, {
-    mode: 'cors',
-    cache: 'default',
-    method: 'get',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-  })
+})
+.then((answers) => {
+  Object.assign(exportData, answers);
+  return getRemoteApiData(exportData.url + '/documentation');
 })
 .catch((err) => {
-  console.error(chalk.red(`Error while fetching the api (${err.message || err})`));
+  console.error(chalk.red(`Error while fetching the main api infos (${err.message || err})`));
   process.exit();
 })
-.then((res) => {
-  if (!res) {
-    console.error(chalk.red(`Error while fetching the api (bad response)`));
+.then((answers) => {
+  if(answers.constructor !== Object) {
+    console.error(chalk.red('Error while fetching the main api infos: not a valid object'));
     process.exit();
   }
-  return res.json();
+  if (!answers.hasOwnProperty('success') || !answers.success.hasOwnProperty('dataset')) {
+    console.error(chalk.red('Error while fetching the main api infos: missing data'));
+    process.exit();
+  }
+
+  Object.assign(exportData, { api : answers.success.dataset[0] });
+  return getRemoteApiData(exportData.url + exportData.api.links.methods);
+})
+.catch((err) => {
+  console.error(chalk.red(`Error while fetching methods api infos (${err.message || err})`));
+  process.exit();
 })
 .then((json) => {
-  const methodTemplate = getTemplate('api/method');
-  let methods = [];
+  let templateData = { methods: [], api: exportData.api };
   let k = 1;
-  json.success.dataset.forEach((cfg) => {
-    console.info(chalk.grey(`${k}/${json.success.dataset.length} ${cfg.name}`));
-    k++;
-    if (cfg.args) {
-      let data = {
-        methodName: cfg.name,
-        methodArgs: [],
+  json.success.dataset.forEach((methodConfig) => {
+    if (methodConfig.args) {
+      const { name, method = 'get', path, description = '@todo: add description' } = methodConfig;
+      const { params, get, data } = methodConfig.args;
+      const { single } = methodConfig.results;
+
+      console.info(chalk.grey(`${k}/${json.success.dataset.length} ${name}`));
+      k++;
+
+      let methodData = {
+        name,
+        description,
+        verb: method,
+        path,
         options: [],
-        method: cfg.method || 'get',
-        description: cfg.description || '@todo: add description',
-        results: cfg.results,
+        singleResult: single,
+        args: [],
       };
 
-      const args = cfg.args;
-
-      let methodPath = cfg.path;
-      if (args.params) {
-        args.params.forEach((param) => {
-          data.options.push(param);
-          methodPath = methodPath.replace(`:${param}`, '${' + param + '}'); // eslint-disable-line prefer-template
-          data.description += `\n   * @param ${param}`;
+      if (params) {
+        params.forEach((param) => {
+          methodData.description += `\n   * @param ${param}`;
         });
-        methodPath = '`' + methodPath + '`'; // eslint-disable-line prefer-template
+
+        params.forEach((param) => {
+          methodData.options.push(param);
+        });
+
+        params.forEach((param) => {
+          methodData.path = methodData.path.replace(`:${param}`, '${' + param + '}'); // eslint-disable-line prefer-template
+        });
+        methodData.path = '`' + methodData.path + '`'; // eslint-disable-line prefer-template
       } else {
-        methodPath = `'${methodPath}'`;
+        methodData.path = "'" + methodData.path + "'";
       }
 
-      data.methodArgs.push(methodPath);
+      methodData.args.push(methodData.path);
 
-      if (args.get) {
-        data.options.push('options = {}');
-        data.methodArgs.push('options');
-        data.description += `\n   * @param options filter items to ${data.method}`;
-      } else {
-        if (args.data) {
-          data.methodArgs.push('{}');
-        }
+      if (get) {
+        methodData.options.push('options = {}');
+        methodData.args.push('options');
+        const v = methodData.verb === 'patch' ? 'update' : methodData.verb;
+        methodData.description += `\n   * @param options filtering items to ${v}`;
+      } else if (data) {
+        methodData.args.push('{}');
       }
-      if (args.data) {
-        data.options.push('data = {}');
-        data.methodArgs.push('data');
-        data.description += `\n   * @param data new data to ${data.method}`;
+
+      if (data) {
+        methodData.options.push('data = {}');
+        methodData.args.push('data');
+        methodData.description += `\n   * @param data`;
       }
-      methods.push(ejs.render(methodTemplate, data));
+
+      templateData.methods.push(methodData);
     }
   });
 
-  inquirer.prompt({
-    type: 'text',
-    name: 'path',
-    default: './',
-    message: 'Where to store the file?',
-  })
-  .then((answers) => {
-    outputTemplate('api/main', { methods: methods.join('') }, answers.path, `api-client.js`);
-  });
-})
-.catch((err) => console.log(err));
+  const template = getTemplate('api/main');
+  outputTemplate('api/main', templateData, `${exportData.api.name}-client-${exportData.api.version}.js`);
+});
