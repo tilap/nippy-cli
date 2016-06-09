@@ -1,0 +1,10 @@
+import Controller from '../../core/library/controller';
+import loggerFactory from '../../core/factory/logger';
+
+module.exports = class <%- kName %>Controller extends Controller {
+  constructor() {
+    super({
+      logger: loggerFactory('controller', { message_prefix: 'controller <%- name %>' }),
+    });
+  }
+};

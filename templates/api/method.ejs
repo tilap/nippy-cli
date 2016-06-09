@@ -1,0 +1,12 @@
+
+  /**
+   * <%- description %>
+   */
+  async <%- methodName %>(<%- options.join(', ') %>) {
+    const response = await super.<%- method %>(<%- methodArgs.join(', ') %>);
+    return <%
+      if (results.single === true) { %>response.getUniqueData()<% }
+      else if (results.single === false) { %>response.getData()<% }
+      else { %>response.getSuccess()<% }
+    %>;
+  }

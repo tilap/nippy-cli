@@ -1,0 +1,11 @@
+import Controller from '../../core/class/controller-service';
+import loggerFactory from '../../core/factory/logger';
+
+module.exports = class <%- kName %>Controller extends Controller {
+  constructor() {
+    super({
+      defaultServiceId: '<%- model %>',
+      logger: loggerFactory('controller', { message_prefix: 'controller <%- name %>' }),
+    });
+  }
+};

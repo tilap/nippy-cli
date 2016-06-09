@@ -1,0 +1,55 @@
+{
+  "name": "nippy-cli",
+  "version": "0.1.0",
+  "description": "Cli for api building",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "./node_modules/.bin/babel src -d dist",
+    "lint": "./node_modules/.bin/eslint src --fix",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "nippy": "./dist/index.js"
+  },
+  "author": {
+    "name": "Julien Tilap LA VINH",
+    "email": "jlavinh@gmail.com",
+    "url": "http://tilap.net/"
+  },
+  "engine": {
+    "node": "6.2.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tilap/nippy-cli.git"
+  },
+  "devDependencies": {
+    "babel-cli": "6.9.0",
+    "babel-eslint": "6.0.4",
+    "babel-plugin-transform-runtime": "6.9.0",
+    "babel-preset-es2015": "6.9.0",
+    "babel-preset-stage-2": "6.5.0",
+    "eslint": "2.11.1",
+    "eslint-config-airbnb": "9.0.1",
+    "eslint-plugin-babel": "3.2.0",
+    "eslint-plugin-import": "1.8.1"
+  },
+  "dependencies": {
+    "chalk": "1.1.3",
+    "commander": "2.9.0",
+    "crypto": "0.0.3",
+    "dotenv": "2.0.0",
+    "ejs": "2.4.2",
+    "fs-extra": "0.30.0",
+    "inquirer": "1.0.2",
+    "node-fetch": "1.5.3",
+    "replace": "0.3.0"
+  },
+  "scaffolding": {
+    "bare": {
+      "name": "Bare - A simple bare api project",
+      "url": "https://github.com/tilap/nippy-scaff-bare/tarball/v1.0.0"
+    }
+  }
+}

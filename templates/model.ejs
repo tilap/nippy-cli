@@ -1,0 +1,49 @@
+import mongoose from 'mongoose';
+import Schema from '../../core/library/model-schema';
+
+module.exports = function (mongooseConnection) {
+  const schema = new Schema({
+    name: '<%- kName %>',
+    connection: mongooseConnection,
+    descriptor: {<% if (example) { %>
+      /*
+      propertyname: {
+        type: String,
+        required: [true, 'propertyname is required'],
+        unique: [true, 'this propertyname already exists'],
+        index: true,
+        querable: true,
+        hideJSON: false,
+        hideObject: false,
+        default: 'noname',
+        validate: {
+          validator: (v) => /[a-z]{5,20}/.test(v),
+          message: 'propertyname must be a alpha lowercase chars string from 5 to 20 letters',
+        },
+      },
+      */
+    <% } %>},
+  });
+
+  <% if (example) { %>
+  /*
+  schema.pre('save', function (next) {
+    if (!this.isNew) {
+      next();
+    }
+    // Below only done on creation
+  });
+  */
+
+  /*
+  // To add a link on Api response
+  schema.virtual('link').get(function () {
+    return {
+      rel: 'self',
+      href: `/api/v1/<%- name %>/${this.id}`,
+    };
+  });
+  */
+  <% } %>
+  return schema.getModel();
+};
