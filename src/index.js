@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-global.fetch = require('node-fetch');
-
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import path from 'path';
@@ -39,6 +37,10 @@ const config = {
   setup: {
     name: 'setup project .env file',
     short: 'c',
+  },
+  api: {
+    name: 'generate api client',
+    short: 'a',
   },
 };
 

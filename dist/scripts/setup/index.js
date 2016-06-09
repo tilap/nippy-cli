@@ -146,7 +146,5 @@ _inquirer2.default.prompt({
         }
       }
     }
-  }).on('end', function () {
-    console.log('done');
   });
 });

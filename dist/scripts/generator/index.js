@@ -109,7 +109,7 @@ _inquirer2.default.prompt({
   type: 'list',
   name: 'generator',
   message: 'What do you want to generate?',
-  choices: [{ name: 'a db model', value: 'model', short: 'a model' }, { name: 'a service', value: 'service', short: 'a service' }, { name: 'a controller', value: 'controller', short: 'a controller' }, { name: 'a router', value: 'router', short: 'a router' }, { name: 'a full model-service-controller-router', value: 'full-model', short: 'a full set' }, new _inquirer2.default.Separator(), { name: 'the api client', value: 'api', short: 'the api client' }]
+  choices: [{ name: 'a db model', value: 'model', short: 'a model' }, { name: 'a service', value: 'service', short: 'a service' }, { name: 'a controller', value: 'controller', short: 'a controller' }, { name: 'a router', value: 'router', short: 'a router' }, { name: 'a full model-service-controller-router', value: 'full-model', short: 'a full set' }]
 }).then(function (typeAnswers) {
   switch (typeAnswers.generator) {
 
@@ -262,6 +262,7 @@ _inquirer2.default.prompt({
 
         if (_ret4 === 'break') break;
       }
+
     // =========================================================================
     case 'router':
       {
@@ -288,91 +289,6 @@ _inquirer2.default.prompt({
         }();
 
         if (_ret5 === 'break') break;
-      }
-
-    // =========================================================================
-    case 'api':
-      {
-        var docUrls = '' + config.urls.root + config.urls.root_path + '/documentation/methods';
-        console.info(_chalk2.default.grey('  fetching api documentation from ' + docUrls));
-
-        (0, _nodeFetch2.default)(docUrls, {
-          mode: 'cors',
-          cache: 'default',
-          method: 'get',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        }).catch(function (err) {
-          console.error(_chalk2.default.red('Error while fetching the api ' + (err.message || err)));
-        }).then(function (res) {
-          return res.json();
-        }).then(function (json) {
-          var methodTemplate = getTemplate('api/method');
-          var methods = [];
-          var k = 1;
-          json.success.dataset.forEach(function (cfg) {
-            console.info(_chalk2.default.grey(k + '/' + json.success.dataset.length + ' ' + cfg.name));
-            k++;
-            if (cfg.args) {
-              (function () {
-                var data = {
-                  methodName: cfg.name,
-                  methodArgs: [],
-                  options: [],
-                  method: cfg.method || 'get',
-                  description: cfg.description || '@todo: add description',
-                  results: cfg.results
-                };
-
-                var args = cfg.args;
-
-                var methodPath = cfg.path;
-                if (args.params) {
-                  args.params.forEach(function (param) {
-                    data.options.push(param);
-                    methodPath = methodPath.replace(':' + param, '${' + param + '}'); // eslint-disable-line prefer-template
-                    data.description += '\n   * @param ' + param;
-                  });
-                  methodPath = '`' + methodPath + '`'; // eslint-disable-line prefer-template
-                } else {
-                    methodPath = '\'' + methodPath + '\'';
-                  }
-
-                data.methodArgs.push(methodPath);
-
-                if (args.get) {
-                  data.options.push('options = {}');
-                  data.methodArgs.push('options');
-                  data.description += '\n   * @param options filter items to ' + data.method;
-                } else {
-                  if (args.data) {
-                    data.methodArgs.push('{}');
-                  }
-                }
-                if (args.data) {
-                  data.options.push('data = {}');
-                  data.methodArgs.push('data');
-                  data.description += '\n   * @param data new data to ' + data.method;
-                }
-                methods.push(_ejs2.default.render(methodTemplate, data));
-              })();
-            }
-          });
-
-          _inquirer2.default.prompt({
-            type: 'text',
-            name: 'name',
-            default: 'base',
-            message: 'Name of the file?'
-          }).then(function (answers) {
-            outputTemplate('api/main', { methods: methods.join('') }, '../client', answers.name + '.js');
-          });
-        }).catch(function (err) {
-          return console.log(err);
-        });
-        break;
       }
 
     default:

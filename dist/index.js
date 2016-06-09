@@ -23,8 +23,6 @@ var _commander2 = _interopRequireDefault(_commander);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-global.fetch = require('node-fetch');
-
 var pckg = require('../package.json');
 
 var runScript = require('./library/runScript')(_path2.default.resolve(__dirname, 'scripts'));
@@ -58,6 +56,10 @@ var config = {
   setup: {
     name: 'setup project .env file',
     short: 'c'
+  },
+  api: {
+    name: 'generate api client',
+    short: 'a'
   }
 };
 

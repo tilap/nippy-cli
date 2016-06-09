@@ -80,8 +80,6 @@ inquirer.prompt({
     { name: 'a controller', value: 'controller', short: 'a controller' },
     { name: 'a router', value: 'router', short: 'a router' },
     { name: 'a full model-service-controller-router', value: 'full-model', short: 'a full set' },
-    new inquirer.Separator(),
-    { name: 'the api client', value: 'api', short: 'the api client' },
   ],
 }).then((typeAnswers) => {
   switch (typeAnswers.generator) {
@@ -214,6 +212,7 @@ inquirer.prompt({
       });
       break;
     }
+
     // =========================================================================
     case 'router': {
       let data = {};
@@ -236,89 +235,6 @@ inquirer.prompt({
           outputTemplate('router', data, parameters.paths.routers, `${data.ressource}.js`);
         });
       });
-      break;
-    }
-
-    // =========================================================================
-    case 'api': {
-      const docUrls = `${config.urls.root}${config.urls.root_path}/documentation/methods`;
-      console.info(chalk.grey(`  fetching api documentation from ${docUrls}`));
-
-      fetch(docUrls, {
-        mode: 'cors',
-        cache: 'default',
-        method: 'get',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      })
-      .catch((err) => {
-        console.error(chalk.red(`Error while fetching the api ${err.message || err}`));
-      })
-      .then((res) => res.json())
-      .then((json) => {
-        const methodTemplate = getTemplate('api/method');
-        let methods = [];
-        let k = 1;
-        json.success.dataset.forEach((cfg) => {
-          console.info(chalk.grey(`${k}/${json.success.dataset.length} ${cfg.name}`));
-          k++;
-          if (cfg.args) {
-            let data = {
-              methodName: cfg.name,
-              methodArgs: [],
-              options: [],
-              method: cfg.method || 'get',
-              description: cfg.description || '@todo: add description',
-              results: cfg.results,
-            };
-
-            const args = cfg.args;
-
-            let methodPath = cfg.path;
-            if (args.params) {
-              args.params.forEach((param) => {
-                data.options.push(param);
-                methodPath = methodPath.replace(`:${param}`, '${' + param + '}'); // eslint-disable-line prefer-template
-                data.description += `\n   * @param ${param}`;
-              });
-              methodPath = '`' + methodPath + '`'; // eslint-disable-line prefer-template
-            } else {
-              methodPath = `'${methodPath}'`;
-            }
-
-            data.methodArgs.push(methodPath);
-
-            if (args.get) {
-              data.options.push('options = {}');
-              data.methodArgs.push('options');
-              data.description += `\n   * @param options filter items to ${data.method}`;
-            } else {
-              if (args.data) {
-                data.methodArgs.push('{}');
-              }
-            }
-            if (args.data) {
-              data.options.push('data = {}');
-              data.methodArgs.push('data');
-              data.description += `\n   * @param data new data to ${data.method}`;
-            }
-            methods.push(ejs.render(methodTemplate, data));
-          }
-        });
-
-        inquirer.prompt({
-          type: 'text',
-          name: 'name',
-          default: 'base',
-          message: 'Name of the file?',
-        })
-        .then((answers) => {
-          outputTemplate('api/main', { methods: methods.join('') }, '../client', `${answers.name}.js`);
-        });
-      })
-      .catch((err) => console.log(err));
       break;
     }
 
