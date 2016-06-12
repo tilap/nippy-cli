@@ -8,8 +8,7 @@ const runScript = require('../../library/runScript')(path.resolve(__dirname, '..
 const spinner = new Spinner('  %s processing... please wait');
 spinner.setSpinnerString('|/-\\');
 
-runScript('scaffolder/index.js')
-  .then(() => runScript('setup/index.js'))
+runScript('setup/index.js')
   .then(() => new Promise((resolve, reject) => {
     console.info('');
     console.info(chalk.green.bold('❯ Installing node dependancies...'));

@@ -13,12 +13,16 @@ const modelFactoryPath = path.resolve(scriptRoot, './dist/core/factory/model.js'
 try {
   fs.accessSync(modelFactoryPath, fs.F_OK);
 } catch (e) {
-  console.error(chalk.red('You need to scalfold the project first and build it'));
-  console.error(chalk.grey(`The file ${modelFactoryPath} are required`));
+  console.error(chalk.red('  You need to scalfold the project first and build it'));
+  console.error(chalk.grey(`  The file ${modelFactoryPath} are required`));
   process.exit();
 }
 
-dotenv.config();
+try {
+  dotenv.config();
+} catch (err) {
+  console.info(chalk.grey(`  .env file not found. Use global environment`));
+}
 if (!process.env.PORT) process.env.PORT = 1234; // port is useless but is required to work
 
 function seed(folder) {

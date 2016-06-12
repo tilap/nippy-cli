@@ -25,9 +25,7 @@ var runScript = require('../../library/runScript')(_path2.default.resolve(__dirn
 var spinner = new _cliSpinner.Spinner('  %s processing... please wait');
 spinner.setSpinnerString('|/-\\');
 
-runScript('scaffolder/index.js').then(function () {
-  return runScript('setup/index.js');
-}).then(function () {
+runScript('setup/index.js').then(function () {
   return new _promise2.default(function (resolve, reject) {
     console.info('');
     console.info(_chalk2.default.green.bold('❯ Installing node dependancies...'));
