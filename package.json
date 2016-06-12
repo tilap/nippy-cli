@@ -1,6 +1,6 @@
 {
   "name": "nippy-cli",
-  "version": "2.5.0",
+  "version": "2.4.0",
   "description": "Cli for api building",
   "main": "./dist/index.js",
   "scripts": {
@@ -47,5 +47,15 @@
     "inquirer": "1.0.2",
     "node-fetch": "1.5.3",
     "replace": "0.3.0"
+  },
+  "scaffolding": {
+    "bare": {
+      "name": "Bare - A simple bare api project",
+      "url": "https://github.com/tilap/nippy-scaff-bare/tarball/v1.0.1"
+    },
+    "notifier": {
+      "name": "Notifier - A notification api",
+      "url": "https://github.com/tilap/nippy-scaff-notifier/tarball/v1.0.0"
+    }
   }
 }
