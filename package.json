@@ -47,11 +47,5 @@
     "inquirer": "1.0.2",
     "node-fetch": "1.5.3",
     "replace": "0.3.0"
-  },
-  "scaffolding": {
-    "bare": {
-      "name": "Bare - A simple bare api project",
-      "url": "https://github.com/tilap/nippy-scaff-bare/tarball/v1.0.0"
-    }
   }
 }
