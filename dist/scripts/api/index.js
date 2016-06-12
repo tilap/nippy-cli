@@ -228,6 +228,5 @@ _inquirer2.default.prompt({
     }
   });
 
-  var template = getTemplate('api/main');
-  outputTemplate('api/main', templateData, exportData.api.name + '-client-' + exportData.api.version + '.js');
+  outputTemplate('api-client', templateData, exportData.api.name + '-client-' + exportData.api.version + '.js');
 });

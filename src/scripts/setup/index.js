@@ -1,13 +1,14 @@
-import inquirer from 'inquirer';
-import fse from 'fs-extra';
-import replace from 'replace';
-import fs from 'fs';
 import chalk from 'chalk';
 import crypto from 'crypto';
+import inquirer from 'inquirer';
+import fs from 'fs';
+import fse from 'fs-extra';
+import path from 'path';
+import replace from 'replace';
 
 const templateFile = '.env-example';
 const distFile = '.env';
-const configPath = './src/app/config/';
+const configPath = path.resolve(process.cwd(), './src/app/config/');
 
 console.info('');
 console.info(chalk.green.bold('❯ Setting .env file'));
@@ -100,23 +101,21 @@ inquirer.prompt({
   });
 
   // Copy config files if not exists
-  fse.walk(configPath)
+  fse.walk(`${configPath}/base`)
     .on('data', (item) => {
       if (fs.lstatSync(item.path).isFile()) {
-        if(item.path.indexOf('-base') > -1) {
-          const newFilePath = item.path.replace('-base', '');
-          let fileExists = true;
-          try {
-            fs.accessSync(newFilePath, fs.F_OK);
-          } catch (e) {
-            fileExists = false;
-          }
-          if (!fileExists) {
-            fse.copySync(item.path, newFilePath);
-            console.info(chalk.grey(`  Config file ${newFilePath} created`));
-          } else {
-            console.info(chalk.grey(`  Config file ${newFilePath} already exists (skip copy)`));
-          }
+        const newFilePath = item.path.replace(`${configPath}/base`, configPath);
+        let fileExists = true;
+        try {
+          fs.accessSync(newFilePath, fs.F_OK);
+        } catch (e) {
+          fileExists = false;
+        }
+        if (!fileExists) {
+          fse.copySync(item.path, newFilePath);
+          console.info(chalk.green(`  ${newFilePath} config file created`));
+        } else {
+          console.info(chalk.grey(`  Config file ${newFilePath} already exists (skip copy)`));
         }
       }
     });

@@ -12,22 +12,6 @@ var _assign = require('babel-runtime/core-js/object/assign');
 
 var _assign2 = _interopRequireDefault(_assign);
 
-var _inquirer = require('inquirer');
-
-var _inquirer2 = _interopRequireDefault(_inquirer);
-
-var _fsExtra = require('fs-extra');
-
-var _fsExtra2 = _interopRequireDefault(_fsExtra);
-
-var _replace = require('replace');
-
-var _replace2 = _interopRequireDefault(_replace);
-
-var _fs = require('fs');
-
-var _fs2 = _interopRequireDefault(_fs);
-
 var _chalk = require('chalk');
 
 var _chalk2 = _interopRequireDefault(_chalk);
@@ -36,11 +20,31 @@ var _crypto = require('crypto');
 
 var _crypto2 = _interopRequireDefault(_crypto);
 
+var _inquirer = require('inquirer');
+
+var _inquirer2 = _interopRequireDefault(_inquirer);
+
+var _fs = require('fs');
+
+var _fs2 = _interopRequireDefault(_fs);
+
+var _fsExtra = require('fs-extra');
+
+var _fsExtra2 = _interopRequireDefault(_fsExtra);
+
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+var _replace = require('replace');
+
+var _replace2 = _interopRequireDefault(_replace);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var templateFile = '.env-example';
 var distFile = '.env';
-var configPath = './src/app/config/';
+var configPath = _path2.default.resolve(process.cwd(), './src/app/config/');
 
 console.info('');
 console.info(_chalk2.default.green.bold('❯ Setting .env file'));
@@ -128,22 +132,20 @@ _inquirer2.default.prompt({
   });
 
   // Copy config files if not exists
-  _fsExtra2.default.walk(configPath).on('data', function (item) {
+  _fsExtra2.default.walk(configPath + '/base').on('data', function (item) {
     if (_fs2.default.lstatSync(item.path).isFile()) {
-      if (item.path.indexOf('-base') > -1) {
-        var newFilePath = item.path.replace('-base', '');
-        var fileExists = true;
-        try {
-          _fs2.default.accessSync(newFilePath, _fs2.default.F_OK);
-        } catch (e) {
-          fileExists = false;
-        }
-        if (!fileExists) {
-          _fsExtra2.default.copySync(item.path, newFilePath);
-          console.info(_chalk2.default.grey('  Config file ' + newFilePath + ' created'));
-        } else {
-          console.info(_chalk2.default.grey('  Config file ' + newFilePath + ' already exists (skip copy)'));
-        }
+      var newFilePath = item.path.replace(configPath + '/base', configPath);
+      var fileExists = true;
+      try {
+        _fs2.default.accessSync(newFilePath, _fs2.default.F_OK);
+      } catch (e) {
+        fileExists = false;
+      }
+      if (!fileExists) {
+        _fsExtra2.default.copySync(item.path, newFilePath);
+        console.info(_chalk2.default.green('  ' + newFilePath + ' config file created'));
+      } else {
+        console.info(_chalk2.default.grey('  Config file ' + newFilePath + ' already exists (skip copy)'));
       }
     }
   });
