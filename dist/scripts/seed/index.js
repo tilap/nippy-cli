@@ -35,12 +35,16 @@ var modelFactoryPath = _path2.default.resolve(scriptRoot, './dist/core/factory/m
 try {
   _fs2.default.accessSync(modelFactoryPath, _fs2.default.F_OK);
 } catch (e) {
-  console.error(_chalk2.default.red('You need to scalfold the project first and build it'));
-  console.error(_chalk2.default.grey('The file ' + modelFactoryPath + ' are required'));
+  console.error(_chalk2.default.red('  You need to scalfold the project first and build it'));
+  console.error(_chalk2.default.grey('  The file ' + modelFactoryPath + ' are required'));
   process.exit();
 }
 
-_dotenv2.default.config();
+try {
+  _dotenv2.default.config();
+} catch (err) {
+  console.info(_chalk2.default.grey('  .env file not found. Use global environment'));
+}
 if (!process.env.PORT) process.env.PORT = 1234; // port is useless but is required to work
 
 function seed(folder) {
@@ -113,6 +117,6 @@ new _promise2.default(function (resolve, reject) {
   process.exit(0);
 }).catch(function (err) {
   console.error(_chalk2.default.red('✘ Error during seeding'));
-  console.error(_chalk2.default.red(err.message) || err);
+  console.error(_chalk2.default.red(err.message || err));
   process.exit(0);
 });

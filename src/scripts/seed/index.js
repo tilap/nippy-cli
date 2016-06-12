@@ -88,6 +88,6 @@ new Promise((resolve, reject) => {
 })
 .catch((err) => {
   console.error(chalk.red('✘ Error during seeding'));
-  console.error(chalk.red(err.message) || err);
+  console.error(chalk.red(err.message || err));
   process.exit(0);
 });
