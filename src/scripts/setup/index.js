@@ -111,11 +111,13 @@ inquirer.prompt({
         } catch (e) {
           fileExists = false;
         }
+
+        const localFilename = newFilePath.replace(`${configPath}/`, '');
         if (!fileExists) {
           fse.copySync(item.path, newFilePath);
-          console.info(chalk.green(`  ${newFilePath} config file created`));
+          console.info(chalk.green(`  ${localFilename} config file created`));
         } else {
-          console.info(chalk.grey(`  Config file ${newFilePath} already exists (skip copy)`));
+          console.info(chalk.grey(`  Config file ${localFilename} already exists (skip copy)`));
         }
       }
     });

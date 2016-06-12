@@ -141,11 +141,13 @@ _inquirer2.default.prompt({
       } catch (e) {
         fileExists = false;
       }
+
+      var localFilename = newFilePath.replace(configPath + '/', '');
       if (!fileExists) {
         _fsExtra2.default.copySync(item.path, newFilePath);
-        console.info(_chalk2.default.green('  ' + newFilePath + ' config file created'));
+        console.info(_chalk2.default.green('  ' + localFilename + ' config file created'));
       } else {
-        console.info(_chalk2.default.grey('  Config file ' + newFilePath + ' already exists (skip copy)'));
+        console.info(_chalk2.default.grey('  Config file ' + localFilename + ' already exists (skip copy)'));
       }
     }
   });
