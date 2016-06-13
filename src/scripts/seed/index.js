@@ -15,7 +15,7 @@ try {
 } catch (e) {
   console.error(chalk.red('  You need to scalfold the project first and build it'));
   console.error(chalk.grey(`  The file ${modelFactoryPath} are required`));
-  process.exit();
+  process.exit(100);
 }
 
 try {

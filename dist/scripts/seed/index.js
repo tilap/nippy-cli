@@ -37,7 +37,7 @@ try {
 } catch (e) {
   console.error(_chalk2.default.red('  You need to scalfold the project first and build it'));
   console.error(_chalk2.default.grey('  The file ' + modelFactoryPath + ' are required'));
-  process.exit();
+  process.exit(100);
 }
 
 try {

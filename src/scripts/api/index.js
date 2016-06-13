@@ -67,7 +67,7 @@ function getRemoteApiData(url) {
   })
   .catch((err) => {
     console.error(chalk.red(`Error while fetching the main api infos (${err.message || err})`));
-    process.exit();
+    process.exit(100);
   })
   .then((res) => {
     if (!res) {
@@ -116,11 +116,11 @@ inquirer.prompt({
 .then((answers) => {
   if(answers.constructor !== Object) {
     console.error(chalk.red('Error while fetching the main api infos: not a valid object'));
-    process.exit();
+    process.exit(100);
   }
   if (!answers.hasOwnProperty('success') || !answers.success.hasOwnProperty('dataset')) {
     console.error(chalk.red('Error while fetching the main api infos: missing data'));
-    process.exit();
+    process.exit(100);
   }
 
   Object.assign(exportData, { api : answers.success.dataset[0] });
@@ -128,7 +128,7 @@ inquirer.prompt({
 })
 .catch((err) => {
   console.error(chalk.red(`Error while fetching methods api infos (${err.message || err})`));
-  process.exit();
+  process.exit(100);
 })
 .then((json) => {
   let templateData = { methods: [], api: exportData.api };

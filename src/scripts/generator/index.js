@@ -22,7 +22,7 @@ try {
 } catch (e) {
   console.error(chalk.red('You need to scalfold the project first and build it'));
   console.error(chalk.grey(`The file ${envFile}, ${configFile} and ${parametersFile} are required`));
-  process.exit();
+  process.exit(100);
 }
 
 dotenv.config();

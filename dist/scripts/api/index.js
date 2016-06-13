@@ -100,7 +100,7 @@ function getRemoteApiData(url) {
     }
   }).catch(function (err) {
     console.error(_chalk2.default.red('Error while fetching the main api infos (' + (err.message || err) + ')'));
-    process.exit();
+    process.exit(100);
   }).then(function (res) {
     if (!res) {
       console.error(_chalk2.default.red('Error while fetching the api (bad response)'));
@@ -145,18 +145,18 @@ _inquirer2.default.prompt({
 }).then(function (answers) {
   if (answers.constructor !== Object) {
     console.error(_chalk2.default.red('Error while fetching the main api infos: not a valid object'));
-    process.exit();
+    process.exit(100);
   }
   if (!answers.hasOwnProperty('success') || !answers.success.hasOwnProperty('dataset')) {
     console.error(_chalk2.default.red('Error while fetching the main api infos: missing data'));
-    process.exit();
+    process.exit(100);
   }
 
   (0, _assign2.default)(exportData, { api: answers.success.dataset[0] });
   return getRemoteApiData(exportData.url + exportData.api.links.methods);
 }).catch(function (err) {
   console.error(_chalk2.default.red('Error while fetching methods api infos (' + (err.message || err) + ')'));
-  process.exit();
+  process.exit(100);
 }).then(function (json) {
   var templateData = { methods: [], api: exportData.api };
   var k = 1;

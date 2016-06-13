@@ -54,7 +54,7 @@ try {
 } catch (e) {
   console.error(_chalk2.default.red('You need to scalfold the project first'));
   console.error(_chalk2.default.grey('The template file ' + templateFile + ' was not found'));
-  process.exit();
+  process.exit(100);
 }
 
 var data = {};

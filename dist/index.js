@@ -116,7 +116,7 @@ if (commandAsk) {
       switch (answer.script) {
         case 'exit':
           console.info(_chalk2.default.grey('✌ Bye!'));
-          process.exit();
+          process.exit(100);
           break;
         default:
           {

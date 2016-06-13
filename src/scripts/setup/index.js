@@ -18,7 +18,7 @@ try {
 } catch (e) {
   console.error(chalk.red('You need to scalfold the project first'));
   console.error(chalk.grey(`The template file ${templateFile} was not found`));
-  process.exit();
+  process.exit(100);
 }
 
 let data = {};

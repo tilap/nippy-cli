@@ -97,7 +97,7 @@ if (commandAsk) {
     switch (answer.script) {
       case 'exit':
         console.info(chalk.grey('✌ Bye!'));
-        process.exit();
+        process.exit(100);
         break;
       default: {
         return runScript(`${answer.script}/index.js`);
