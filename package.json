@@ -1,6 +1,6 @@
 {
   "name": "nippy-cli",
-  "version": "2.5.4",
+  "version": "2.6.0",
   "description": "Cli for api building",
   "main": "./dist/index.js",
   "scripts": {
