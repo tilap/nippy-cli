@@ -24,9 +24,63 @@ You'll be able to:
 
 ### Start a new project
 
-- **shortcut:** ```nippy -i```
-- **description:** scaffold a project, setup basic env, install node dependancies and build the dist files
-- **notes:** See _Project scaffolding_ section for more information about scaffolding
+#### Import codebase
+
+_Example here is provided with https://github.com/tilap/nippy-scaff-base_
+
+```
+mkdir myapp
+cd myapp
+nippy -S
+```
+
+Select the `base api`. It will copy code in the current folder and rename your project in main files (package.json and README.md).
+
+#### Init the project
+
+```
+nippy -i
+```
+
+Answer the few questions for your local environement (mostly dev env). Wait til it has install everything.
+
+Then create your remote git host, add and do your first commit.
+
+#### Deploy
+
+Deployment is provided by fabric, based on github tags.
+
+##### First time
+
+- You need your project to be on git (and your server must be able to access this git server).
+- You need your local fabfile (not git as it can contains production informations)
+- You need to setup specific config files on your server
+
+###### Init your project on git
+
+Add and commit your sources on a git repository
+
+##### Setup your fabfile
+
+```cp fabfile.py.example fabfile.py```
+
+Edit the fabfile, replace at least the `env.repository`, `env.hosts`, `env.path` with your owns settings. Run
+
+##### Set your project environement stuff
+
+```fab prod setup```
+
+It will init the project on your remote server. You can then add spcific server files list in fabfile (in var `env.shared_paths`).
+
+Your project is ready to deploy
+
+##### Deploy
+
+Once the project is init on your remote server, you can deploy with
+
+```fab prod deploy```
+
+(of fab preprod deploy, fab testing deploy... for other environment). You can use ```fab prod rollback``` too.
 
 ### Code generator
 
@@ -51,6 +105,12 @@ You'll be able to:
 - **shortcut:** ```nippy -S```
 - **description:** Copy project sources from a remote tarball or a local folder
 - **notes:** Scaffold is done from sources found in *scaffolding* package.json property or from your home *.nippyrc* file. It manages local scaff folder or remote tar.gz file (from github for example).
+
+### Project init
+
+- **shortcut:** ```nippy -i```
+- **description:** Init project name and .env
+- **notes:** -
 
 ### Setup project .env file
 
