@@ -75,6 +75,12 @@ function getControllerNames() {
   });
 }
 
+function getServicesNames() {
+  return _fs2.default.readdirSync(_path2.default.resolve('./src/app', parameters.paths.services)).map(function (k) {
+    return k.replace('.js', '');
+  });
+}
+
 function getTemplate(tpl) {
   var filepath = _path2.default.resolve(__dirname, '../../../templates', tpl + '.ejs');
   return _fs2.default.readFileSync(filepath, { encoding: 'utf8' });
@@ -227,34 +233,22 @@ _inquirer2.default.prompt({
             name: 'name',
             message: 'What is the name of the controller?',
             validate: function validate(res) {
-              return res.match(/^\w/i) ? true : 'Must be a lowacase alpha string';
+              return res.match(/^\w/i) ? true : 'Must be a lowercase alpha string';
             }
           }).then(function (answers) {
             data.name = answers.name.toLowerCase();
             data.kName = data.name.substr(0, 1).toUpperCase() + data.name.substr(1, 1000);
             return data;
-          }).then(function () {
+          }).then(function (answers) {
             return _inquirer2.default.prompt({
               type: 'list',
-              name: 'type',
-              message: 'What kind of controller to generate?',
-              choices: [{ name: 'A basic controller', value: '', short: 'basic' }, { name: 'A controller bound to a model', value: 'model', short: 'model bound' }]
+              name: 'service',
+              message: 'Which service to bind to?',
+              choices: getServicesNames()
             });
           }).then(function (answers) {
-            if (answers.type === 'model') {
-              template = 'controller-model';
-              return _inquirer2.default.prompt({
-                type: 'list',
-                name: 'model',
-                message: 'Which model to bind to?',
-                choices: getModelsNames()
-              }).then(function (answers) {
-                data.model = answers.model;
-              });
-            } else {
-              return null;
-            }
-          }).then(function () {
+            data.service = answers.service;
+            template = 'controller-service';
             outputTemplate(template, data, parameters.paths.controllers, data.name + '.js');
           });
           return 'break';
