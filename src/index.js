@@ -17,29 +17,29 @@ process.on('unhandledRejection', (reason) => {
 });
 
 const config = {
+  scaffolder: {
+    name: '[S] project scaffolding',
+    short: 'S',
+  },
   install: {
-    name: 'start a new project (scaffold and setup)',
+    name: '[i] install the project',
     short: 'i',
   },
   generator: {
-    name: 'generate some code',
+    name: '[g] generate some code',
     short: 'g',
   },
   seed: {
-    name: 'seed database',
+    name: '[s] seed database',
     short: 's',
     option: 'path',
   },
-  scaffolder: {
-    name: 'project scaffolding',
-    short: 'S',
-  },
   setup: {
-    name: 'setup project .env file',
+    name: '[c] setup project .env file',
     short: 'c',
   },
   api: {
-    name: 'generate api client',
+    name: '[a] generate api client',
     short: 'a',
   },
 };
